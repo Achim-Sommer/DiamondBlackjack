@@ -43,34 +43,34 @@ local cfg = {}
 cfg.blackjackTables = {
     --[id] = {x,y,z,heading}
     [0] = {
-        dealerPos = vector3(1149.3828125,269.19174194336,-52.020873718262),
-        dealerHeading = 46.0,
-        tablePos = vector3(1148.837, 269.747, -52.8409),
-        tableHeading = -134.69,
+        dealerPos = vector3(1024.3428125,59.14174194336,71.480873718262),
+        dealerHeading = 192.81,
+        tablePos = vector3(1024.57100, 58.28297, 71.47610),
+        tableHeading = 12.994,
         distance = 1000.0,
-        prop = "vw_prop_casino_blckjack_01"
+        prop = "vw_prop_casino_3cardpoker_01"
     },
     [1] = {
-        dealerPos = vector3(1151.28,267.33,-51.840),
-        dealerHeading = 222.2,
-        tablePos = vector3(1151.84, 266.747, -52.8409),
-        tableHeading = 45.31,
+        dealerPos = vector3(1023.82,61.62,71.48),
+        dealerHeading = 10.8,
+        tablePos = vector3(1023.62, 62.404, 71.4761),
+        tableHeading = 192.994,
         distance = 1000.0,
-        prop = "vw_prop_casino_blckjack_01"
+        prop = "vw_prop_casino_3cardpoker_01b"
     },
     [2] = {
-        dealerPos = vector3(1128.862,261.795,-51.0357),
-        dealerHeading = 315.0,
-        tablePos = vector3(1129.406, 262.3578, -52.041),
-        tableHeading = 135.31,
+        dealerPos = vector3(1022.33,49.12,72.28),
+        dealerHeading = 102.67,
+        tablePos = vector3(1021.549, 48.898, 72.276),
+        tableHeading = 282.994,
         distance = 1000.0,
-        prop = "vw_prop_casino_blckjack_01b"
+        prop = "vw_prop_casino_3cardpoker_01"
     },
     [3] = {
-        dealerPos = vector3(1143.859,246.783,-51.035),
-        dealerHeading = 313.0,
-        tablePos = vector3(1144.429, 247.3352, -52.041),
-        tableHeading = 135.31,
+        dealerPos = vector3(1014.72, 47.23, 73.28),
+        dealerHeading = 282.35,
+        tablePos = vector3(1015.583, 47.48662, 72.27604),
+        tableHeading = 103.30353546143,
         distance = 1000.0,
         prop = "vw_prop_casino_blckjack_01b"
     },
@@ -80,19 +80,19 @@ cfg.blackjackTables = {
 --Some maps use the prop vw_prop_casino_blckjack_01 some use vw_prop_casino_blckjack_01b, so change accordingly.
 RegisterCommand("getcasinotable",function()
     local playerCoords = GetEntityCoords(PlayerPedId())
-    local blackjackTable = GetClosestObjectOfType(playerCoords.x,playerCoords.y,playerCoords.z,3.0,GetHashKey("vw_prop_casino_blckjack_01"),0,0,0)
+    local blackjackTable = GetClosestObjectOfType(playerCoords.x,playerCoords.y,playerCoords.z,GetEntityHeading(PlayerPedId()),GetHashKey("vw_prop_casino_blckjack_01"),0,0,0)
     if DoesEntityExist(blackjackTable) then
         print("Found entity")
         print("tablePos pos",GetEntityCoords(blackjackTable))
         print("tableHeading heading",GetEntityHeading(blackjackTable))
-        print("prop: vw_prop_casino_blckjack_01")
+        print("prop: vw_prop_casino_3cardpoker_01")
     else
-        local blackjackTable2 = GetClosestObjectOfType(playerCoords.x,playerCoords.y,playerCoords.z,3.0,GetHashKey("vw_prop_casino_blckjack_01b"),0,0,0)
+        local blackjackTable2 = GetClosestObjectOfType(playerCoords.x,playerCoords.y,playerCoords.z,GetEntityHeading(PlayerPedId()),GetHashKey("vw_prop_casino_blckjack_01b"),0,0,0)
         if DoesEntityExist(blackjackTable2) then
             print("Found entity")
             print("tablePos pos:",GetEntityCoords(blackjackTable2))
             print("tableHeading heading:",GetEntityHeading(blackjackTable2))
-            print("prop: vw_prop_casino_blckjack_01")
+            print("prop: vw_prop_casino_3cardpoker_01")
         else
             print("Could not find entity")
         end
@@ -215,7 +215,7 @@ Citizen.CreateThread(function()
             if closestChair ~= nil and closestChairDist < 2 then
                 if not timeoutHowToBlackjack then
                     if blackjackTableData[closestChair] == false then 
-                        drawNativeNotification("Press ~INPUT_PICKUP~ to play the blackjack")
+                        drawNativeNotification("Drücke ~INPUT_PICKUP~ um Blackjack zu spielen")
                     else 
                         drawNativeNotification("This seat is taken.")
                     end
@@ -243,7 +243,7 @@ Citizen.CreateThread(function()
         end
         if drawCurrentHand then 
             SetTextEntry_2("STRING")
-            AddTextComponentString("Your hand is ["..tostring(currentHand).."], the dealers hand is ["..tostring(dealersHand).."]")
+            AddTextComponentString("Du hast ["..tostring(currentHand).."], der Dealer hat ["..tostring(dealersHand).."]")
 			EndTextCommandPrint(1000, 1)
         end
         Wait(0)
@@ -251,7 +251,6 @@ Citizen.CreateThread(function()
 end)
 
 Citizen.CreateThread(function()
-    local startTime = GetGameTimer()
     while true do 
         if waitingForBetState then
             if IsDisabledControlJustPressed(0, 22) then --Custom Bet [space]
@@ -275,16 +274,12 @@ Citizen.CreateThread(function()
                     notify("~r~Invalid amount.")
                 end
             end
-            if IsControlPressed(0, 10) and GetGameTimer()-startTime > 250 then --Increase bet [pageup]
-		startTime = GetGameTimer()
+            if IsControlPressed(0, 10) then --Increase bet [pageup]
                 currentBetAmount = currentBetAmount + 100
             end            
-            if IsControlPressed(0, 11) and GetGameTimer()-startTime > 250 then --Decrease bet [pagedown]
+            if IsControlPressed(0, 11) then --Decrease bet [pagedown]
                 if currentBetAmount >= 100 then 
-		    startTime = GetGameTimer()
                     currentBetAmount = currentBetAmount - 100
-		else
-		    notify('~r~ Minimum bet reached')
                 end
             end            
         end
@@ -417,7 +412,7 @@ RMenu:Get('cmgblackjack_high', 'instructions'):SetSubtitle("~b~BLACKJACK")
 RageUI.CreateWhile(1.0, true, function()
     if RageUI.Visible(RMenu:Get('cmgblackjack', 'instructions')) then
         RageUI.DrawContent({ header = true, glare = true, instructionalButton = true }, function()           
-            RageUI.FakeButton("test", "The aim of Blackjack is to beat the Dealer's hand without going over 21. This game uses four 52           card decks, which are shuffled at the start of every hand.                                                                                    The dealer will stand on soft 17.", { RightLabel = "→→→" }, true, function(Hovered, Active, Selected)
+            RageUI.FakeButton("test", "Das Ziel von Blackjack ist es, das Blatt des Dealers zu schlagen, ohne die 21 zu überschreiten. Der Dealer bleibt bei einer 17 stehen.", { RightLabel = "→→→" }, true, function(Hovered, Active, Selected)
                 if (Hovered) then
 
                 end
@@ -438,7 +433,7 @@ end, 1)
 RageUI.CreateWhile(1.0, true, function()
     if RageUI.Visible(RMenu:Get('cmgblackjack_high', 'instructions')) then
         RageUI.DrawContent({ header = true, glare = true, instructionalButton = true }, function()           
-            RageUI.FakeButton("test", "The aim of Blackjack is to beat the Dealer's hand without going over 21. This game uses four 52           card decks, which are shuffled at the start of every hand.                                                                                    The dealer will stand on soft 17.", { RightLabel = "→→→" }, true, function(Hovered, Active, Selected)
+            RageUI.FakeButton("test", "Das Ziel von Blackjack ist es, das Blatt des Dealers zu schlagen, ohne die 21 zu überschreiten. Der Dealer bleibt bei einer 17 stehen.", { RightLabel = "→→→" }, true, function(Hovered, Active, Selected)
                 if (Hovered) then
 
                 end
@@ -506,7 +501,7 @@ AddEventHandler("Blackjack:beginBetsBlackjack",function(gameID,tableId)
     blackjackInstructional = setupBlackjackInstructionalScaleform("instructional_buttons")
     --print("made blackjackInstructional true cause its intro time bet")
     ClearHelp(true)
-    drawNativeNotification("Place your bets")
+    drawNativeNotification("Plaziere deinen Einsatz")
     bettedThisRound = false
     drawTimerBar = true
     drawCurrentHand = false
@@ -531,7 +526,7 @@ AddEventHandler("Blackjack:beginBetsBlackjack",function(gameID,tableId)
         drawTimerBar = false
         if not bettedThisRound then
             --print("made blackjackInstructional nil cause you didnt bet")
-            drawNativeNotification("No bet placed, round skipped")
+            drawNativeNotification("Kein Einsatz, Runde ausgelassen")
         end
     end)
 end)
@@ -670,7 +665,7 @@ function goToBlackjackSeat(blackjackSeatID)
     closestDealerPed, closestDealerPedDistance = getClosestDealer()
     PlayAmbientSpeech1(closestDealerPed,"MINIGAME_DEALER_GREET","SPEECH_PARAMS_FORCE_NORMAL_CLEAR",1)
     --print("[CMG Casino] start sit at blackjack seat") 
-    drawNativeNotification("Waiting for next game to start...")
+    drawNativeNotification("Warten auf den Beginn des nächsten Spiels...")
     blackjackAnimsToLoad = {
       "anim_casino_b@amb@casino@games@blackjack@dealer",
       "anim_casino_b@amb@casino@games@shared@dealer@",
@@ -2663,31 +2658,31 @@ function setupBlackjackInstructionalScaleform(scaleform)
     PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
     PushScaleformMovieFunctionParameterInt(1)
     Button(GetControlInstructionalButton(2, 194, true)) -- The button to display
-    ButtonMessage("Leave table") --BACKSPACE
+    ButtonMessage("Tisch verlassen") --BACKSPACE
     PopScaleformMovieFunctionVoid()
 
     PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
     PushScaleformMovieFunctionParameterInt(0)
     Button(GetControlInstructionalButton(2, 191, true))
-    ButtonMessage("Place bet") --ENTER
+    ButtonMessage("Einsatz setzen") --ENTER
     PopScaleformMovieFunctionVoid()
 
     PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
     PushScaleformMovieFunctionParameterInt(2)
     Button(GetControlInstructionalButton(2, 11, true))
-    ButtonMessage("Lower bet") --Page Down
+    ButtonMessage("Niedrigerer Einsatz") --Page Down
     PopScaleformMovieFunctionVoid()
 
     PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
     PushScaleformMovieFunctionParameterInt(3)
     Button(GetControlInstructionalButton(2, 10, true))
-    ButtonMessage("Increase bet") --Page Up
+    ButtonMessage("Höherer Einsatz") --Page Up
     PopScaleformMovieFunctionVoid()
 
     PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
     PushScaleformMovieFunctionParameterInt(4)
     Button(GetControlInstructionalButton(2, 22, true))
-    ButtonMessage("Custom bet") --Space
+    ButtonMessage("Custom Einsatz") --Space
     PopScaleformMovieFunctionVoid()  
     
     

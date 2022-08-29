@@ -2,6 +2,11 @@ local blackjackTables = {
     --[chairId] == false or source if taken
 }
 
+function giveChips(source,amount)
+    local xPlayer = ESX.GetPlayerFromId(source)
+	xPlayer.addInventoryItem('zetony', amount)
+end
+
 for i=0,127,1 do
     blackjackTables[i] = false
 end
@@ -9,16 +14,28 @@ end
 local blackjackGameInProgress = {}
 local blackjackGameData = {}
 
-function tryTakeChips(source,amount)
+--function tryTakeChips(source,amount)
     --returns true if taken chips succesfully
     --returns false if doesn't have enough chips
-    return true
-end
+--    return true
+--end
 
-function giveChips(source,amount)
+--function giveChips(source,amount)
     --gives amount in chips to source
+--end
+ESX = nil
+TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+function tryTakeChips(source,amount)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	local item = xPlayer.getInventoryItem('zetony').count
+		if item >= amount then
+			xPlayer.removeInventoryItem('zetony',amount)
+			return true
+		else 
+			TriggerClientEvent('esx:showNotification', source, 'Du hast nicht genug Spielships!')
+			return false --you dont actually need to return false, since default is false but anw. I like this way
+		end
 end
-
 AddEventHandler('playerDropped', function (reason)
     local source = source
     for k,v in pairs(blackjackTables) do
